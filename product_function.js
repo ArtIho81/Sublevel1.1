@@ -30,66 +30,77 @@ function Product(ID, name, brand, price, activeSize, quantity) {
   };
   this.setID = function (ID) {
     this.ID = ID;
+    return this;
   };
   this.getName = function () {
     return this.name;
   };
   this.setName = function (name) {
     this.name = name;
+    return this;
   };
   this.getDescription = function () {
     return this.description;
   };
   this.setDescription = function (description) {
     this.description = description;
+    return this;
   };
   this.getPrice = function () {
     return this.price;
   };
   this.setPrice = function (price) {
     this.price = price;
+    return this;
   };
   this.getBrand = function () {
     return this.brand;
   };
   this.setBrand = function (brand) {
     this.brand = brand;
+    return this;
   };
   this.getSizes = function () {
     return this.sizes;
   };
   this.setSizes = function (sizes) {
     this.sizes = sizes;
+    return this;
   };
   this.getActiveSize = function () {
     return this.activeSize;
   };
   this.setActiveSize = function (activeSize) {
     this.activeSize = activeSize;
+    return this;
   };
   this.getQuantity = function () {
     return this.quantity;
   };
   this.setQuantity = function (quantity) {
     this.quantity = quantity;
+    return this;
   };
   this.getDate = function () {
     return this.date;
   };
   this.setDate = function () {
     this.date = new Date();
+    return this;
   };
   this.getReviews = function () {
     return this.reviews;
   };
   this.setReviews = function (reviews) {
     this.reviews = reviews;
+    return this;
   };
   this.getImages = function () {
     return this.images;
   };
   this.setImages = function (images) {
     this.images = images;
+    return this;
   };
 
   /**
@@ -109,15 +120,19 @@ function Product(ID, name, brand, price, activeSize, quantity) {
   };
   this.addSize = function (size) {
     this.sizes.push(size);
+    return this;
   };
   this.deleteSize = function (size) {
     this.sizes = this.sizes.filter((s) => s !== size);
+    return this;
   };
   this.addReview = function (review) {
     this.reviews.push(review);
+    return this;
   };
   this.deleteReview = function (ID) {
     this.reviews = this.reviews.filter((review) => review.ID !== ID);
+    return this;
   };
   this.getReviewByID = function (ID) {
     return this.reviews.find((review) => review.ID === ID);
@@ -129,11 +144,10 @@ function Product(ID, name, brand, price, activeSize, quantity) {
    * @returns The average rating of a product based on reviews rating.
    */
   this.getAverageRating = function () {
-    let rating = 0;
-    this.reviews.forEach((review) => {
-      rating += sumObjectProperties(review.rating);
-    });
-    return this.reviews.length === 0 ? rating : rating / this.reviews.length;
+    const rating = this.reviews.reduce(
+      (acc, review) => acc += sumObjectProperties(review.rating), 0);
+    const isReviewsEmpty = this.reviews.length === 0;
+    return isReviewsEmpty ? 0 : rating / this.reviews.length;
   };
   /**
    * Returns the product rating from one review.
@@ -142,16 +156,17 @@ function Product(ID, name, brand, price, activeSize, quantity) {
    */
   function sumObjectProperties(object) {
     let sum = { sum: 0, properties: 0 };
+    const isValidProperty = (property) =>
+      object.hasOwnProperty(property) && typeof object[property] === "number";
+
     for (let property in object) {
-      if (
-        object.hasOwnProperty(property) &&
-        typeof object[property] === "number"
-      ) {
+      if (isValidProperty(property)) {
         sum.sum += object[property];
         sum.properties++;
       }
     }
-    return sum.properties === 0 ? sum.sum : sum.sum / sum.properties;
+    const isPropertiesEnable = sum.properties !== 0;
+    return isPropertiesEnable ? sum.sum / sum.properties : 0;
   }
 }).call(Product.prototype);
 
@@ -186,23 +201,10 @@ function Review(ID, author, comment, service, price, value, quality) {
  * @returns An array with searching products.
  */
 function search(products, search) {
-  const searchProducts = [];
-  products.forEach((product) => {
-    if (isMatch(product.name, search) || isMatch(product.description, search)) {
-      searchProducts.push(product);
-    }
-  });
-  return searchProducts;
-}
-
-/**
- * Checks for a match search text in text.
- * @param {string} text - the text in which the match is searched.
- * @param {string} search - the desired match.
- * @returns True if text contains search.
- */
-function isMatch(property, search) {
-  return new RegExp(`\\b${search}`, "i").test(property);
+  const isMatch = (property) => new RegExp(`\\b${search}`, "i").test(property);
+  return products.filter(
+    (product) => isMatch(product.name) || isMatch(product.description)
+  );
 }
 
 /**
@@ -238,9 +240,9 @@ const product4 = new Product("p4", "Shorts", "Nike", 14, "XS", 1);
 const product5 = new Product("p5", "Pants", "Reebok", 25, "L", 2);
 
 const review1 = new Review("r1", "Max", "Super", 5, 5, 5, 5);
-const review2 = new Review("r2", "Alex", "Good", 4, 4, 4, 4);
+const review2 = new Review("r2", "Alex", "Good", 4, 4, 5, 4);
 const review3 = new Review("r3", "Serg", "Norm", 3, 3, 3, 3);
-const review4 = new Review("r4", "Max", "OK", 5, 4, 4, 5);
+const review4 = new Review("r4", "Max", "OK", 5, 4, 5, 5);
 const review5 = new Review("r5", "Andrew", "Bad", 2, 2, 2, 2);
 
 const reviews = [];
@@ -250,44 +252,49 @@ reviews.push(review3);
 reviews.push(review4);
 reviews.push(review5);
 
-product1.setReviews(reviews);
+product1
+  .setReviews(reviews)
+  .setActiveSize("XS")
+  .setID("7899")
+  .setName("qwerty");
 product2.setReviews(reviews);
 product3.setReviews(reviews);
 product4.setReviews(reviews);
 product5.setReviews(reviews);
 
 const products = [product1, product2, product3, product4, product5];
-const sortRules = [
-  "idup",
-  "iddown",
-  "priceup",
-  "Pricedown",
-  "NamEuP",
-  "nAmedoWn",
-];
-for (let sortRule of sortRules) {
-  let sortProducts = sort(products, sortRule);
-  console.log(sortRule)
-  sortProducts.forEach((product) => {
-    switch (sortRule) {
-      case "idup":
-        console.log(product.ID);
-        break;
-      case "iddown":
-        console.log(product.ID);
-        break;
-      case "priceup":
-        console.log(product.price);
-        break;
-      case "Pricedown":
-        console.log(product.price);
-        break;
-      case "NamEuP":
-        console.log(product.name);
-        break;
-      case "nAmedoWn":
-        console.log(product.name);
-    }
-  });
-}
-
+console.log(product1.getAverageRating());
+// const sortRules = [
+//   "idup",
+//   "iddown",
+//   "priceup",
+//   "Pricedown",
+//   "NamEuP",
+//   "nAmedoWn",
+// ];
+console.log(product1);
+// for (let sortRule of sortRules) {
+//   let sortProducts = sort(products, sortRule);
+//   console.log(sortRule);
+//   sortProducts.forEach((product) => {
+//     switch (sortRule) {
+//       case "idup":
+//         console.log(product.ID);
+//         break;
+//       case "iddown":
+//         console.log(product.ID);
+//         break;
+//       case "priceup":
+//         console.log(product.price);
+//         break;
+//       case "Pricedown":
+//         console.log(product.price);
+//         break;
+//       case "NamEuP":
+//         console.log(product.name);
+//         break;
+//       case "nAmedoWn":
+//         console.log(product.name);
+//     }
+//   });
+// }

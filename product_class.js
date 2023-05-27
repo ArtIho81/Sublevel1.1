@@ -34,66 +34,77 @@ class Product {
   }
   setID(ID) {
     this.ID = ID;
+    return this;
   }
   getName() {
     return this.name;
   }
   setName(name) {
     this.name = name;
+    return this;
   }
   getDescription() {
     return this.description;
   }
   setDescription(description) {
     this.description = description;
+    return this;
   }
   getPrice() {
     return this.price;
   }
   setPrice(price) {
     this.price = price;
+    return this;
   }
   getBrand() {
     return this.brand;
   }
   setbrand(brand) {
     this.brand = brand;
+    return this;
   }
   getSizes() {
     return this.sizes;
   }
   setSizes(sizes) {
     this.sizes = sizes;
+    return this;
   }
   getActiveSize() {
     return this.activeSize;
   }
   setActiveSize(activeSize) {
     this.activeSize = activeSize;
+    return this;
   }
   getQuantity() {
     return this.quantity;
   }
   setQuantity(quantity) {
     this.quantity = quantity;
+    return this;
   }
   getDate() {
     return this.date;
   }
   setDate() {
     this.date = new Date();
+    return this;
   }
   getReviews() {
     return this.reviews;
   }
   setReviews(reviews) {
     this.reviews = reviews;
+    return this;
   }
   getImages() {
     return this.images;
   }
   setImages(images) {
     this.images = images;
+    return this;
   }
   getImage(image) {
     switch (typeof image) {
@@ -107,15 +118,19 @@ class Product {
   }
   addSize(size) {
     this.sizes.push(size);
+    return this;
   }
   deleteSize(size) {
     this.sizes = this.sizes.filter((s) => s !== size);
+    return this;
   }
   addReview(review) {
     this.reviews.push(review);
+    return this;
   }
   deleteReview(ID) {
     this.reviews = this.reviews.filter((review) => review.ID !== ID);
+    return this;
   }
   getReviewByID(ID) {
     return this.reviews.find((review) => review.ID === ID);
@@ -126,12 +141,9 @@ class Product {
    * @returns The average rating of a product based on reviews rating.
    */
   getAverageRating() {
-    let rating = 0;
-    this.reviews.forEach((review) => {
-      rating += this.#getProductRating(review.rating);
-    });
+    const rating = this.reviews.reduce((acc, review) => acc + this.#getProductRating(review.rating), 0);
     const isReviewsEmpty = this.reviews.length === 0;
-    return isReviewsEmpty ? rating : rating / this.reviews.length;
+    return isReviewsEmpty ? 0 : rating / this.reviews.length;
   }
 
   /**
@@ -141,24 +153,17 @@ class Product {
    */
   #getProductRating(rating) {
     const sum = { sum: 0, properties: 0 };
+    const isValidProperty = (property) => {
+      rating.hasOwnProperty(property) && typeof rating[property] === "number";
+    }
     for (let property in rating) {
-      if (this.#isValidProperty(property, rating)) {
+      if (isValidProperty(property)) {
         sum.sum += rating[property];
         sum.properties++;
       }
     }
     const isPropertiesEnable = sum.properties !== 0;
-    return isPropertiesEnable ? sum.sum / sum.properties : sum.sum;
-  }
-
-  /**
-   * Checks the object property for type and ownership of the object.
-   * @param {string} property - the property of the product rating.
-   * @param {Object} rating - the product rating.
-   * @returns True if property is own property for rating and type of this property is number.
-   */
-  #isValidProperty(property, rating) {
-   return rating.hasOwnProperty(property) && typeof rating[property] === "number";
+    return isPropertiesEnable ? sum.sum / sum.properties : 0;
   }
 }
 
@@ -198,24 +203,11 @@ class Review {
  * @returns An array with searching products.
  */
 function search(products, search) {
-  const searchProducts = [];
-  products.forEach((product) => {
-    if (isMatch(product.name, search) || isMatch(product.description, search)) {
-      searchProducts.push(product);
-    }
-  });
-  return searchProducts;
-}
+  const isMatch = (property) => new RegExp(`\\b${search}`, "i").test(property);
+  return products.filter((product) => isMatch(product.name) || isMatch(product.description));
+  };
 
-/**
- * Checks for a match search text in text.
- * @param {string} text - the text in which the match is searched.
- * @param {string} search - the desired match.
- * @returns True if text contains search.
- */
-function isMatch(text, search) { return new RegExp(`\\b${search}`, "i").test(text); }
-
-/**
+  /**
  * Implements sorting products by its ID or price or name.
  * @param {Array} products - array of Product objects.
  * @param {string} sortRule - sorting property.
@@ -223,18 +215,18 @@ function isMatch(text, search) { return new RegExp(`\\b${search}`, "i").test(tex
  */
 function sort(products, sortRule) {
   const sortProducts = products.slice();
-  switch (sortRule) {
-    case "IDUp":
+  switch (sortRule.toLowercase()) {
+    case "idup":
       return sortProducts.sort((a, b) => a.ID.localeCompare(b.ID));
-    case "IDDown":
+    case "Iddown":
       return sortProducts.sort((a, b) => b.ID.localeCompare(a.ID));
-    case "priceUp":
+    case "priceup":
       return sortProducts.sort((a, b) => a.price - b.price);
-    case "priceDown":
+    case "pricedown":
       return sortProducts.sort((a, b) => b.price - a.price);
-    case "nameUp":
+    case "nameup":
       return sortProducts.sort((a, b) => a.name.localeCompare(b.name));
-    case "nameDown":
+    case "namedown":
       return sortProducts.sort((a, b) => b.name.localeCompare(a.name));
     default:
       return products;

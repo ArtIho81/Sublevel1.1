@@ -1,14 +1,14 @@
 "use strict";
 /**
-   * Constructor for AbstractProduct object is a prototype for specific products. 
-   * Objects of this class are not created.  
-   * @param {string} ID - The product key (unique value).
-   * @param {string} name - The product's name.
-   * @param {string} brand - The product's brand.
-   * @param {number} price - The product's price.
-   * @param {number} quantity - Number of products in stock.
-   */
-  
+ * Constructor for AbstractProduct object is a prototype for specific products.
+ * Objects of this class are not created.
+ * @param {string} ID - The product key (unique value).
+ * @param {string} name - The product's name.
+ * @param {string} brand - The product's brand.
+ * @param {number} price - The product's price.
+ * @param {number} quantity - Number of products in stock.
+ */
+
 function AbstractProduct(ID, name, brand, price, quantity) {
   if (this.constructor === AbstractProduct) {
     throw new Error("Cannot instantiate abstract class");
@@ -30,54 +30,63 @@ function AbstractProduct(ID, name, brand, price, quantity) {
   };
   this.setID = function (ID) {
     this.ID = ID;
+    return this;
   };
   this.getName = function () {
     return this.name;
   };
   this.setName = function (name) {
     this.name = name;
+    return this;
   };
   this.getDescription = function () {
     return this.description;
   };
   this.setDescription = function (description) {
     this.description = description;
+    return this;
   };
   this.getPrice = function () {
     return this.price;
   };
   this.setPrice = function (price) {
     this.price = price;
+    return this;
   };
   this.getBrand = function () {
     return this.brand;
   };
   this.setBrand = function (brand) {
     this.brand = brand;
+    return this;
   };
   this.getQuantity = function () {
     return this.quantity;
   };
   this.setQuantity = function (quantity) {
     this.quantity = quantity;
+    return this;
   };
   this.getDate = function () {
     return this.date;
   };
   this.setDate = function () {
     this.date = new Date();
+    return this;
   };
   this.getReviews = function () {
     return this.reviews;
   };
   this.setReviews = function (reviews) {
     this.reviews = reviews;
+    return this;
   };
   this.getImages = function () {
     return this.images;
   };
   this.setImages = function (images) {
     this.images = images;
+    return this;
   };
 
   /**
@@ -97,9 +106,11 @@ function AbstractProduct(ID, name, brand, price, quantity) {
   };
   this.addReview = function (review) {
     this.reviews.push(review);
+    return this;
   };
   this.deleteReview = function (ID) {
     this.reviews = this.reviews.filter((review) => review.ID !== ID);
+    return this;
   };
   this.getReviewByID = function (ID) {
     return this.reviews.find((review) => review.ID === ID);
@@ -111,41 +122,32 @@ function AbstractProduct(ID, name, brand, price, quantity) {
    * @returns The average rating of a product based on reviews rating.
    */
   this.getAverageRating = function () {
-    let rating = 0;
-    this.reviews.forEach((review) => {
-      rating += sumObjectProperties(review.rating);
-    });
-    return this.reviews.length === 0 ? rating : rating / this.reviews.length;
+    const getReviewRating = (object) => {
+      const values = Object.values(object);
+      const isPropertiesEnable = values.length !== 0;
+      return isPropertiesEnable
+        ? values.reduce((acc, value) => (acc += value), 0) / values.length
+        : 0;
+    };
+    this.reviews.reduce(
+      (acc, review) => (acc += getReviewRating(review.rating)),
+      0
+    );
+    const isReviewsEmpty = this.reviews.length === 0;
+    return isReviewsEmpty ? 0 : rating / this.reviews.length;
   };
-  /**
-   * Returns the product rating from one review.
-   * @param {Object} object - an object containing the values of the product rating properties.
-   * @returns The product rating from one review.
-   */
-  function sumObjectProperties(object) {
-    let sum = { sum: 0, properties: 0 };
-    for (let property in object) {
-      if (
-        object.hasOwnProperty(property) &&
-        typeof object[property] === "number"
-      ) {
-        sum.sum += object[property];
-        sum.properties++;
-      }
-    }
-    const isPropertiesEnable = sum.properties !== 0;
-    return isPropertiesEnable ? sum.sum / sum.properties : 0;
-  }
 
   this.getPriceForQuantity = function (int) {
-    return this.price * int;
+    return `$${this.price * int}`;
   };
 
   this.getSetProperty = function (property, value) {
-    if (value === undefined) {
-      return this[property];
-    }
-    this[property] = value;
+    const set = () => {
+      this[property] = value;
+      return this;
+    };
+    const isGetter = value === undefined;
+    return isGetter ? this[property] : set();
   };
 
   this.getFullInformation = function () {
@@ -153,7 +155,7 @@ function AbstractProduct(ID, name, brand, price, quantity) {
     for (let property in this) {
       if (this.hasOwnProperty(property)) {
         if (property === "reviews") {
-          info += `${property}: \n${getObjectInfo(this[property])}`;
+          info += `${property}:\n${getObjectInfo(this[property])}`;
         } else {
           info += `${property} - ${this[property]} \n`;
         }
@@ -161,19 +163,12 @@ function AbstractProduct(ID, name, brand, price, quantity) {
     }
     return info;
   };
-  function getInfo(reviews) {
-    let info = "";
-    reviews.forEach((review) => {
-      info += `${this.getObjectInfo(review)}`;
-    });
-    return info;
-  }
 
   function getObjectInfo(object) {
     let info = "";
     for (let property in object) {
       if (typeof object[property] === "object" && property !== "date") {
-        info += ` ${property}: \n${getObjectInfo(object[property])} \n`;
+        info += ` ${property}:\n${getObjectInfo(object[property])} \n`;
       } else {
         info += ` ${property} - ${object[property]} \n`;
       }
@@ -183,15 +178,15 @@ function AbstractProduct(ID, name, brand, price, quantity) {
 }).call(AbstractProduct.prototype);
 
 /**
-   * Constructor for Review object.
-   * @param {string} ID - the review key (unique value).
-   * @param {string} author - the review author name.
-   * @param {string} comment - the comment for the product.
-   * @param {number} service - the product service rating.
-   * @param {number} price - the product price rating.
-   * @param {number} value - the product value rating.
-   * @param {number} quality - the product quality rating.
-   */
+ * Constructor for Review object.
+ * @param {string} ID - the review key (unique value).
+ * @param {string} author - the review author name.
+ * @param {string} comment - the comment for the product.
+ * @param {number} service - the product service rating.
+ * @param {number} price - the product price rating.
+ * @param {number} value - the product value rating.
+ * @param {number} quality - the product quality rating.
+ */
 function Review(ID, author, comment, service, price, value, quality) {
   this.ID = ID;
   this.author = author;
@@ -205,8 +200,16 @@ function Review(ID, author, comment, service, price, value, quality) {
   };
 }
 
-
-function Clothes(ID, name, brand, price, quantity, activeSize, material, color) {
+function Clothes(
+  ID,
+  name,
+  brand,
+  price,
+  quantity,
+  activeSize,
+  material,
+  color
+) {
   AbstractProduct.call(this, ID, name, brand, price, quantity);
 
   this.sizes = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -224,30 +227,36 @@ Object.assign(Clothes.prototype, {
   },
   setSizes(sizes) {
     this.sizes = sizes;
+    return this;
   },
   getActiveSize() {
     return this.activeSize;
   },
   setActiveSize(activeSize) {
     this.activeSize = activeSize;
+    return this;
   },
   addSize(size) {
     this.sizes.push(size);
+    return this;
   },
   deleteSize(size) {
     this.sizes = this.sizes.filter((s) => s !== size);
+    return this;
   },
   getMaterial() {
     return this.material;
   },
   setMaterial(material) {
     this.material = material;
+    return this;
   },
   getColor() {
     return this.getColor;
   },
   setColor(color) {
     this.color = color;
+    return this;
   },
 });
 
@@ -261,17 +270,18 @@ Electronics.prototype.constructor = Electronics;
 
 Electronics.prototype.getWarranty = function () {
   return this.warranty;
-}
+};
 Electronics.prototype.setWarranty = function (warranty) {
   this.warranty = warranty;
+  return this;
 };
 Electronics.prototype.getPower = function () {
   return this.power;
 };
 Electronics.prototype.setPower = function (power) {
   this.power = power;
+  return this;
 };
-
 
 /**
  * Implements the search for products by matching the search query
@@ -282,33 +292,35 @@ Electronics.prototype.setPower = function (power) {
  */
 function search(products, search) {
   const isMatch = (property) => new RegExp(`\\b${search}`, "i").test(property);
-  return products.filter((product) => isMatch(product.name) || isMatch(product.description));
-  };
+  return products.filter(
+    (product) => isMatch(product.name) || isMatch(product.description)
+  );
+}
 
 /**
  * Implements sorting products by its ID or price or name.
  * @param {Array} products - array of Product objects.
- * @param {string} sortRule - sorting property.
+ * @param {Object} sortRule - contains sorting property and sorting rule.
+ * For example: sortRule = {sort: "ID", rule: "up"}
  * @returns Sorting array of products by sortRule.
  */
 function sort(products, sortRule) {
-  const sortProducts = products.slice();
-  switch (sortRule.toLowerCase()) {
-    case "idup":
-      return sortProducts.sort((a, b) => a.ID.localeCompare(b.ID));
-    case "iddown":
-      return sortProducts.sort((a, b) => b.ID.localeCompare(a.ID));
-    case "priceup":
-      return sortProducts.sort((a, b) => a.price - b.price);
-    case "pricedown":
-      return sortProducts.sort((a, b) => b.price - a.price);
-    case "nameup":
-      return sortProducts.sort((a, b) => a.name.localeCompare(b.name));
-    case "namedown":
-      return sortProducts.sort((a, b) => b.name.localeCompare(a.name));
-    default:
-      return products;
+  const isUpsorting = sortRule.rule === "up";
+  if (sortRule.sort === "price") {
+    return isUpsorting
+      ? [...products].sort((a, b) => a[sortRule.sort] - b[sortRule.sort])
+      : [...products].sort((a, b) => b[sortRule.sort] - a[sortRule.sort]);
   }
+  if (sortRule.sort === "ID" || sortRule.sort === "name") {
+    return isUpsorting
+      ? [...products].sort((a, b) =>
+          a[sortRule.sort].localeCompare(b[sortRule.sort])
+        )
+      : [...products].sort((a, b) =>
+          b[sortRule.sort].localeCompare(a[sortRule.sort])
+        );
+  }
+  return products;
 }
 
 const productC1 = new Clothes("c1", "T-shirt", "Adidas", 12, "M", 5);
@@ -344,13 +356,17 @@ productC5.setReviews(reviews);
 
 const productsC = [productC3, productC5, productC2, productC4, productC1];
 const productsE = [productE4, productE1, productE5, productE3, productE2];
-const products =productsC.concat(productsE)
+const products = productsC.concat(productsE);
 const sortRules = [
-  "idup",
-  "iddown",
-  "priceup",
-  "Pricedown",
-  "NamEuP",
-  "nAmedoWn",
+  { sort: "ID", rule: "up" },
+  { sort: "ID", rule: "down" },
+  { sort: "price", rule: "up" },
+  { sort: "price", rule: "down" },
+  { sort: "name", rule: "up" },
+  { sort: "name", rule: "down" },
 ];
-console.log(search(productsC, 'des'))
+//console.log(productC1.getFullInformation());
+//console.log(productC1.getSetProperty("ID", "56").getSetProperty("ID"));
+console.log(sort(products, sortRules[2]));
+console.log("==================================");
+console.log(products);

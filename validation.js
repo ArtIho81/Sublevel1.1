@@ -35,4 +35,3 @@ const Validator = {
     return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[\w_]{8,}$/.test(password);
   },
 };
-
